@@ -1,0 +1,9 @@
+<launch>
+  <!-- State Estimator Node -->
+  <arg name="objects" default="UAV0"/>
+  <node pkg="state_estimator" type="state_estimator_node" name="state_estimator" output="screen">
+    <rosparam command="load" file="$(find state_estimator)/config/params.json" />
+  </node>
+  <!-- Set Home Node -->
+  <node pkg="state_estimator" type="set_home_node" name="set_home_node" output="screen" /> 
+</launch>
