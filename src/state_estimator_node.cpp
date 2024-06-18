@@ -61,10 +61,10 @@ private:
         state.twist.twist.angular.y = msg->angular_velocity[1];
         state.twist.twist.angular.z = msg->angular_velocity[2];
 
-        state.pose.pose.orientation.x = msg->quaternion[0];
-        state.pose.pose.orientation.y = msg->quaternion[1];
-        state.pose.pose.orientation.z = msg->quaternion[2];
-        state.pose.pose.orientation.w = msg->quaternion[3];
+        state.pose.pose.orientation.x = msg->quaternion[1];
+        state.pose.pose.orientation.y = msg->quaternion[2];
+        state.pose.pose.orientation.z = msg->quaternion[3];
+        state.pose.pose.orientation.w = msg->quaternion[0];
 
         state_pub.publish(state);
     }
