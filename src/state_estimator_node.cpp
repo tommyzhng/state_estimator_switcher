@@ -15,6 +15,7 @@ class StateEstimatorNode
 
         nh.param("indoor_mode", indoor_mode, true);
 
+        // initialize subscriber
         ros::Subscriber local_position_sub;
         if (indoor_mode)
         {
@@ -26,9 +27,11 @@ class StateEstimatorNode
             local_position_sub = nh.subscribe("/mavros/local_position/odom", 1, &StateEstimatorNode::localPositionCallback, this);
         }
 
+        // initialize publisher
         std::string state_topic = "/mavros/local_position/odom/UAV0";
         state_pub = nh.advertise<nav_msgs::Odometry>(state_topic, 1);
 
+        // initialize service
         ros::ServiceServer estimator_type_server = nh.advertiseService("/estimator_type", &StateEstimatorNode::estimatorType, this);
 
         ros::Rate rate(100.0);
