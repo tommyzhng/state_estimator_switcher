@@ -4,7 +4,7 @@
 #include <std_msgs/Bool.h>
 
 // node that reads params to know which estimator to use. Indoor uses mocap, outdoor uses gps from mavros
-// param is called indoor_mode
+// param is called indoorMode
 
 class StateEstimatorNode
 {
@@ -13,55 +13,67 @@ class StateEstimatorNode
     {
         ros::NodeHandle nh("~");
 
-        nh.param("indoor_mode", indoor_mode, true);
+        nh.param("indoorMode", indoorMode, true);
 
         // initialize subscriber
-        ros::Subscriber local_position_sub;
-        if (indoor_mode)
+        ros::Subscriber localPositionSub;
+        if (indoorMode)
         {
-            std::string mocap_topic = "/mocap/UAV0";
-            local_position_sub = nh.subscribe(mocap_topic, 1, &StateEstimatorNode::mocapCallback, this);
+            std::string mocapTopic = "/mocap/UAV0";
+            localPositionSub = nh.subscribe(mocapTopic, 1, &StateEstimatorNode::mocapCallback, this);
         }
         else
         {
-            local_position_sub = nh.subscribe("/mavros/local_position/odom", 1, &StateEstimatorNode::localPositionCallback, this);
+            localPositionSub = nh.subscribe("/mavros/local_position/odom", 1, &StateEstimatorNode::localPositionCallback, this);
         }
 
         // initialize publisher
-        std::string state_topic = "/mavros/local_position/odom/UAV0";
-        state_pub = nh.advertise<nav_msgs::Odometry>(state_topic, 1);
+        std::string stateTopic = "/mavros/local_position/odom/UAV0";
+        statePub = nh.advertise<nav_msgs::Odometry>(stateTopic, 1);
 
         // initialize service
-        estimator_type_pub = nh.advertise<std_msgs::Bool>("/estimator_type", 1);
+        estimatorTypePub = nh.advertise<std_msgs::Bool>("/estimator_type", 1);
 
         ros::Rate rate(100.0);
         while (ros::ok())
         {
             ros::spinOnce();
-            check_estimator();
+            CheckEstimator();
+
             rate.sleep();
         }
 
     }
 
-    void check_estimator(void)
+    void CheckEstimator(void)
     {
-        if (loop_counter >= loop_threshold)
+        if (loopCounter >= loopThreshold)
         {
-            loop_counter = 0;
+            loopCounter = 0;
             std_msgs::Bool success;
-            success.data = (indoor_mode) ? true : false;
-            estimator_type_pub.publish(success);
+            success.data = (indoorMode) ? true : false;
+            estimatorTypePub.publish(success);
         }
-        loop_counter++;
+        loopCounter++;
+    }
+
+    void SetMocapFlag()
+    {
+
     }
 
 private:
-    ros::Publisher state_pub;
-    ros::Publisher estimator_type_pub;
-    bool indoor_mode;
-    uint64_t loop_counter{0};
-    uint64_t loop_threshold{20};
+    ros::Publisher statePub;
+    ros::Publisher estimatorTypePub;
+    bool indoorMode;
+    uint64_t loopCounter{0};
+    uint64_t loopThreshold{20};
+    
+    struct mocapWatchdogState {
+        bool mocapRecieved{false};
+        uint32_t mocapTimeoutTime{10};
+        
+    };
 
     void mocapCallback(const state_estimator::Mocap::ConstPtr &msg)
     {
@@ -85,12 +97,12 @@ private:
         state.pose.pose.orientation.z = msg->quaternion[3];
         state.pose.pose.orientation.w = msg->quaternion[0];
 
-        state_pub.publish(state);
+        statePub.publish(state);
     }
 
     void localPositionCallback(const nav_msgs::Odometry::ConstPtr &msg)
     {
-        state_pub.publish(msg);
+        statePub.publish(msg);
     }
 };
 
@@ -98,7 +110,7 @@ private:
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "state_estimator_node");
-    StateEstimatorNode state_estimator_node;
+    StateEstimatorNode stateEstimatorNode;
 
     return 0;
 }
