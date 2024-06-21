@@ -1,7 +1,7 @@
 #include <ros/ros.h>
 #include <nav_msgs/Odometry.h>
 #include <state_estimator/Mocap.h>
-#include <std_srvs/SetBool.h>
+#include <std_msgs/Bool.h>
 
 // node that reads params to know which estimator to use. Indoor uses mocap, outdoor uses gps from mavros
 // param is called indoor_mode
@@ -32,20 +32,36 @@ class StateEstimatorNode
         state_pub = nh.advertise<nav_msgs::Odometry>(state_topic, 1);
 
         // initialize service
-        ros::ServiceServer estimator_type_server = nh.advertiseService("/estimator_type", &StateEstimatorNode::estimatorType, this);
+        estimator_type_pub = nh.advertise<std_msgs::Bool>("/estimator_type", 1);
 
         ros::Rate rate(100.0);
         while (ros::ok())
         {
             ros::spinOnce();
+            check_estimator();
             rate.sleep();
         }
-    
+
+    }
+
+    void check_estimator(void)
+    {
+        if (loop_counter >= loop_threshold)
+        {
+            loop_counter = 0;
+            std_msgs::Bool success;
+            success.data = (indoor_mode) ? true : false;
+            estimator_type_pub.publish(success);
+        }
+        loop_counter++;
     }
 
 private:
     ros::Publisher state_pub;
+    ros::Publisher estimator_type_pub;
     bool indoor_mode;
+    uint64_t loop_counter{0};
+    uint64_t loop_threshold{20};
 
     void mocapCallback(const state_estimator::Mocap::ConstPtr &msg)
     {
@@ -76,13 +92,6 @@ private:
     {
         state_pub.publish(msg);
     }
-
-    bool estimatorType(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res)
-    {
-        res.success = (indoor_mode) ? true : false;
-        return true;
-    }
-
 };
 
 
