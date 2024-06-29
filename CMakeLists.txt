@@ -10,26 +10,12 @@ project(state_estimator)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
-  message_generation
   nav_msgs
   std_srvs
-)
-
-add_message_files(
-  DIRECTORY msg
-  FILES
-  Mocap.msg
-)
-
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-  nav_msgs
-  geometry_msgs
+  optitrack_broadcast
 )
 
 catkin_package(
-  CATKIN_DEPENDS message_runtime
 )
 
 
@@ -79,8 +65,6 @@ add_dependencies(set_home_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPO
 ##     catkin_package(CATKIN_DEPENDS ...)
 ##   * uncomment the add_*_files sections below as needed
 ##     and list every .msg/.srv/.action file to be processed
-##   * uncomment the generate_messages entry below
-##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
 # add_message_files(

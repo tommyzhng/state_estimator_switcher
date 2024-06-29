@@ -3,7 +3,7 @@
 
 #include <ros/ros.h>
 #include <nav_msgs/Odometry.h>
-#include <state_estimator/Mocap.h>
+#include <optitrack_broadcast/Mocap.h>
 #include <std_msgs/Bool.h>
 
 namespace fsc {
@@ -22,7 +22,7 @@ public:
     ~StateEstimatorNode() = default;
 
 private:
-    void GetMocapMsg(const state_estimator::Mocap::ConstPtr &msg);
+    void GetMocapMsg(const optitrack_broadcast::Mocap::ConstPtr &msg);
     void GetGPSMsg(const nav_msgs::Odometry::ConstPtr &msg);
     void PubPose(void);
     void CheckEstimator(void);

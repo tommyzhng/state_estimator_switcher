@@ -37,27 +37,14 @@ namespace fsc {
 
     }
 
-    void StateEstimatorNode::GetMocapMsg(const state_estimator::Mocap::ConstPtr &msg)
+    void StateEstimatorNode::GetMocapMsg(const optitrack_broadcast::Mocap::ConstPtr &msg)
     {
         state.header = msg->header;
 
-        state.pose.pose.position.x = msg->position[0];
-        state.pose.pose.position.y = msg->position[1];
-        state.pose.pose.position.z = msg->position[2];
+        state.pose.pose = msg->pose;
 
-        state.twist.twist.linear.x = msg->velocity[0];
-        state.twist.twist.linear.y = msg->velocity[1];
-        state.twist.twist.linear.z = msg->velocity[2];
-
-        state.twist.twist.angular.x = msg->angular_velocity[0];
-        state.twist.twist.angular.y = msg->angular_velocity[1];
-        state.twist.twist.angular.z = msg->angular_velocity[2];
-
-        state.pose.pose.orientation.x = msg->quaternion[1];
-        state.pose.pose.orientation.y = msg->quaternion[2];
-        state.pose.pose.orientation.z = msg->quaternion[3];
-        state.pose.pose.orientation.w = msg->quaternion[0];
-    }
+        state.twist.twist = msg->twist;
+   }
 
     void StateEstimatorNode::GetGPSMsg(const nav_msgs::Odometry::ConstPtr &msg)
     {
