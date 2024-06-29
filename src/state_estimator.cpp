@@ -15,9 +15,9 @@ namespace fsc {
         if (indoorMode) {
             localPositionSub = n.subscribe("/mocap/UAV0", 1, &StateEstimatorNode::GetMocapMsg, this);
         } else {
-            localPositionSub = n.subscribe("/mavros/local_position/odom", 1, &StateEstimatorNode::GetGPSMsg, this);
+            localPositionSub = n.subscribe("/state_estimator/local_position/odom", 1, &StateEstimatorNode::GetGPSMsg, this);
         }
-        statePub = n.advertise<nav_msgs::Odometry>("/mavros/local_position/odom/UAV0", 1);
+        statePub = n.advertise<nav_msgs::Odometry>("/state_estimator/local_position/odom/UAV0", 1);
         estimatorTypePub = n.advertise<std_msgs::Bool>("/estimator_type", 1);
     }
 

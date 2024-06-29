@@ -22,13 +22,13 @@ public:
         diff_position_.pose.position.z = 0.0;
 
         ros::NodeHandle nh;
-        set_home_server_ = nh.advertiseService("/mavros/override_set_home", &SetHomeNode::setHomeCallback, this);
+        set_home_server_ = nh.advertiseService("/state_estimator/override_set_home", &SetHomeNode::setHomeCallback, this);
 
         // subscribe to the current position in mavros
-        current_position_sub_ = nh.subscribe("/mavros/local_position/odom/UAV0", 1, &SetHomeNode::currentPositionCallback, this);
+        current_position_sub_ = nh.subscribe("/state_estimator/local_position/odom/UAV0", 1, &SetHomeNode::currentPositionCallback, this);
 
         // advertise the difference between the home position and the current position
-        diff_position_pub_ = nh.advertise<geometry_msgs::PoseStamped>("/mavros/local_position/adjusted", 1);   
+        diff_position_pub_ = nh.advertise<geometry_msgs::PoseStamped>("/state_estimator/local_position/adjusted", 1);   
 
         ROS_INFO("Set Home Node Initialized"); 
 
