@@ -19,6 +19,7 @@ namespace fsc {
         }
         statePub = n.advertise<nav_msgs::Odometry>("/state_estimator/local_position/odom/UAV0", 1);
         estimatorTypePub = n.advertise<std_msgs::Bool>("/estimator_type", 1);
+        visionPosePub = n.advertise<geometry_msgs::PoseStamped>("/mavros/vision_pose/pose", 1);
     }
 
     void StateEstimatorNode::CheckEstimator(void)
@@ -40,11 +41,12 @@ namespace fsc {
     void StateEstimatorNode::GetMocapMsg(const optitrack_broadcast::Mocap::ConstPtr &msg)
     {
         state.header = msg->header;
-
         state.pose.pose = msg->pose;
-
         state.twist.twist = msg->twist;
-   }
+
+        vision_pose.header = msg->header;
+        vision_pose.pose = msg->pose;
+    }
 
     void StateEstimatorNode::GetGPSMsg(const nav_msgs::Odometry::ConstPtr &msg)
     {
@@ -54,6 +56,7 @@ namespace fsc {
     void StateEstimatorNode::PubPose(void)
     {
         statePub.publish(state);
+        visionPosePub.publish(vision_pose);
     }
 
     void StateEstimatorNode::Update(void)

@@ -4,6 +4,7 @@
 #include <ros/ros.h>
 #include <nav_msgs/Odometry.h>
 #include <optitrack_broadcast/Mocap.h>
+#include "geometry_msgs/PoseStamped.h"
 #include <std_msgs/Bool.h>
 
 namespace fsc {
@@ -31,10 +32,12 @@ private:
     ros::Subscriber localPositionSub;
     ros::Publisher statePub;
     ros::Publisher estimatorTypePub;
+    ros::Publisher visionPosePub;
     bool indoorMode{false};
     uint64_t loopCounter{0};
     uint64_t loopThreshold{20};
     nav_msgs::Odometry state;
+    geometry_msgs::PoseStamped vision_pose;
 };
 };
 #endif

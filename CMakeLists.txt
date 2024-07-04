@@ -19,6 +19,7 @@ catkin_package(
 )
 
 
+
 include_directories(include ${catkin_INCLUDE_DIRS})
 add_library(state_estimator src/state_estimator.cpp)
 target_include_directories(state_estimator PUBLIC include)
@@ -122,13 +123,6 @@ add_dependencies(set_home_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPO
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES state_estimator
-#  CATKIN_DEPENDS roscpp std_msgs
-#  DEPENDS system_lib
-)
-
 ###########
 ## Build ##
 ###########
