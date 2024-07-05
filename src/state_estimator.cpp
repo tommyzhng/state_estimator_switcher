@@ -14,12 +14,12 @@ namespace fsc {
         // initialize subscriber
         if (indoorMode) {
             localPositionSub = n.subscribe("/mocap/UAV0", 1, &StateEstimatorNode::GetMocapMsg, this);
+            visionPosePub = n.advertise<geometry_msgs::PoseStamped>("/mavros/vision_pose/pose", 1);
         } else {
-            localPositionSub = n.subscribe("/state_estimator/local_position/odom", 1, &StateEstimatorNode::GetGPSMsg, this);
+            localPositionSub = n.subscribe("/mavros/local_position/odom", 1, &StateEstimatorNode::GetGPSMsg, this);
         }
         statePub = n.advertise<nav_msgs::Odometry>("/state_estimator/local_position/odom/UAV0", 1);
         estimatorTypePub = n.advertise<std_msgs::Bool>("/estimator_type", 1);
-        visionPosePub = n.advertise<geometry_msgs::PoseStamped>("/mavros/vision_pose/pose", 1);
     }
 
     void StateEstimatorNode::CheckEstimator(void)
@@ -56,7 +56,10 @@ namespace fsc {
     void StateEstimatorNode::PubPose(void)
     {
         statePub.publish(state);
-        visionPosePub.publish(vision_pose);
+        if (indoorMode){
+            visionPosePub.publish(vision_pose);
+        }
+       
     }
 
     void StateEstimatorNode::Update(void)
