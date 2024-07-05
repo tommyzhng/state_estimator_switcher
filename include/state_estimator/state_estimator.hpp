@@ -30,6 +30,7 @@ private:
     void SetMocapFlag(void);
     
     ros::Subscriber localPositionSub;
+    ros::Subscriber velocitySub;
     ros::Publisher statePub;
     ros::Publisher estimatorTypePub;
     ros::Publisher visionPosePub;

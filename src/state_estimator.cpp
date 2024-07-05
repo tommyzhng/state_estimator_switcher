@@ -16,7 +16,7 @@ namespace fsc {
             localPositionSub = n.subscribe("/mocap/UAV0", 1, &StateEstimatorNode::GetMocapMsg, this);
             visionPosePub = n.advertise<geometry_msgs::PoseStamped>("/mavros/vision_pose/pose", 1);
         } else {
-            localPositionSub = n.subscribe("/mavros/local_position/odom", 1, &StateEstimatorNode::GetGPSMsg, this);
+            localPositionSub = n.subscribe("/state_estimator/local_position/odom_adjusted", 1, &StateEstimatorNode::GetGPSMsg, this);
         }
         statePub = n.advertise<nav_msgs::Odometry>("/state_estimator/local_position/odom/UAV0", 1);
         estimatorTypePub = n.advertise<std_msgs::Bool>("/estimator_type", 1);
@@ -50,7 +50,9 @@ namespace fsc {
 
     void StateEstimatorNode::GetGPSMsg(const nav_msgs::Odometry::ConstPtr &msg)
     {
-        state = *msg;
+        state.header = msg->header;
+        state.pose = msg->pose;
+        state.twist = msg->twist;
     }
 
     void StateEstimatorNode::PubPose(void)
