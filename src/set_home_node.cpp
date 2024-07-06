@@ -78,6 +78,8 @@ private:
     }
 
     void attitudeCallback(const sensor_msgs::Imu::ConstPtr &msg) {
+
+      current_odom_.header = msg->header;
       current_odom_.pose.pose.orientation = msg->orientation;
       current_odom_.twist.twist.angular = msg->angular_velocity;
     }
