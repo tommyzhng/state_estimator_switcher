@@ -4,6 +4,7 @@
 #include <ros/ros.h>
 #include <std_srvs/Empty.h>
 #include <geometry_msgs/Point.h>
+#include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <nav_msgs/Odometry.h>
 #include <sensor_msgs/Imu.h>
@@ -29,7 +30,8 @@ public:
         set_home_server_ = nh.advertiseService("/state_estimator/override_set_home", &SetHomeNode::setHomeCallback, this);
 
         // subscribe to the current position in mavros gps
-        subs_["translational_state_source"] = nh.subscribe("/mavros/global_position/local", 1, &SetHomeNode::currentPositionCallback, this);
+        subs_["translational_state_source"] = nh.subscribe("/mavros/local_position/pose", 1, &SetHomeNode::currentPositionCallback, this);
+        subs_["velocity_source"] = nh.subscribe("/mavros/local_position/velocity_local", 1, &SetHomeNode::velocityCallback, this);
         subs_["rotational_state_source"] = nh.subscribe("/mavros/imu/data", 1, &SetHomeNode::attitudeCallback, this);
 
         // advertise the difference between the home position and the current position
@@ -68,13 +70,17 @@ private:
         return true;
     }
 
-    void currentPositionCallback(const nav_msgs::Odometry::ConstPtr &msg)
+    void currentPositionCallback(const geometry_msgs::PoseStamped::ConstPtr &msg)
     {
         // convert odom to pose stamped
         current_odom_.header = msg->header;
 
-        current_odom_.pose.pose.position = msg->pose.pose.position;
-        current_odom_.twist.twist.linear = msg->twist.twist.linear;
+        current_odom_.pose.pose.position = msg->pose.position;
+    }
+
+    void velocityCallback(const geometry_msgs::TwistStamped::ConstPtr &msg) {
+        current_odom_.header = msg->header;
+        current_odom_.twist.twist.linear = msg->twist.linear;
     }
 
     void attitudeCallback(const sensor_msgs::Imu::ConstPtr &msg) {
