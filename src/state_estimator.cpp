@@ -40,6 +40,10 @@ namespace fsc {
 
     void StateEstimatorNode::GetMocapMsg(const optitrack_broadcast::Mocap::ConstPtr &msg)
     {
+        state.header.stamp = ros::Time::now();
+        state.header.frame_id = "map";
+        state.header.seq = msg->header.seq;
+
         state.header = msg->header;
         state.pose.pose = msg->pose;
         state.twist.twist = msg->twist;
@@ -50,7 +54,9 @@ namespace fsc {
 
     void StateEstimatorNode::GetGPSMsg(const nav_msgs::Odometry::ConstPtr &msg)
     {
-        state.header = msg->header;
+        state.header.stamp = ros::Time::now();
+        state.header.frame_id = "map";
+        state.header.seq = msg->header.seq;
         state.pose = msg->pose;
         state.twist = msg->twist;
     }
