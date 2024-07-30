@@ -2,24 +2,29 @@
 
 namespace fsc {
 
+using namespace std::string_literals;
     StateEstimatorNode::StateEstimatorNode(ros::NodeHandle& n)
         //statePub(nh.advertise<nav_msgs::Odometry>("/mavros/local_position/odom/UAV0", 1)),
         //estimatorTypePub(nh.advertise<std_msgs::Bool>("/estimator_type", 1))
     {
         // ros::NodeHandle nh("~");
         //nh.param("indoorMode", indoorMode, true);
-
+        std::string uav_prefix;
+        n.param("uav_prefix", uav_prefix, ""s);
         n.param("indoorMode", indoorMode, true);
 
         // initialize subscriber
         if (indoorMode) {
-            localPositionSub = n.subscribe("/mocap/UAV0", 1, &StateEstimatorNode::GetMocapMsg, this);
-            visionPosePub = n.advertise<geometry_msgs::PoseStamped>("/mavros/vision_pose/pose", 1);
+            localPositionSub = n.subscribe(uav_prefix + "/mocap/UAV0", 1, &StateEstimatorNode::GetMocapMsg, this);
+            visionPosePub = n.advertise<geometry_msgs::PoseStamped>(uav_prefix + "/mavros/vision_pose/pose", 1);
         } else {
-            localPositionSub = n.subscribe("/state_estimator/local_position/odom_adjusted", 1, &StateEstimatorNode::GetGPSMsg, this);
+            localPositionSub = n.subscribe(uav_prefix + "/state_estimator/local_position/odom_adjusted", 1, &StateEstimatorNode::GetGPSMsg, this);
         }
-        statePub = n.advertise<nav_msgs::Odometry>("/state_estimator/local_position/odom/UAV0", 1);
-        estimatorTypePub = n.advertise<std_msgs::Bool>("/estimator_type", 1);
+        statePub = n.advertise<nav_msgs::Odometry>(uav_prefix + "/state_estimator/local_position/odom", 1);
+        estimatorTypePub = n.advertise<std_msgs::Bool>(uav_prefix + "/estimator_type", 1);
+
+
+        ROS_INFO("Starting state estimator node for UAV %s", uav_prefix.c_str());
     }
 
     void StateEstimatorNode::CheckEstimator(void)

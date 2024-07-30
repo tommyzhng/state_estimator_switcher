@@ -9,8 +9,11 @@
 #include <nav_msgs/Odometry.h>
 #include <sensor_msgs/Imu.h>
 
+using namespace std::string_literals;
+
 class SetHomeNode
 {
+
 public:
     SetHomeNode()
     {
@@ -27,15 +30,19 @@ public:
         diff_position_.pose.pose.position.z = 0.0;
 
         ros::NodeHandle nh;
-        set_home_server_ = nh.advertiseService("/state_estimator/override_set_home", &SetHomeNode::setHomeCallback, this);
+        ros::NodeHandle pnh("~");
+        auto uav_prefix = pnh.param("uav_prefix", ""s);
+
+        ROS_INFO("Starting set home node for UAV %s", uav_prefix.c_str());
+        set_home_server_ = nh.advertiseService(uav_prefix + "/state_estimator/override_set_home", &SetHomeNode::setHomeCallback, this);
 
         // subscribe to the current position in mavros gps
-        subs_["translational_state_source"] = nh.subscribe("/mavros/local_position/pose", 1, &SetHomeNode::currentPositionCallback, this);
-        subs_["velocity_source"] = nh.subscribe("/mavros/local_position/velocity_local", 1, &SetHomeNode::velocityCallback, this);
-        subs_["rotational_state_source"] = nh.subscribe("/mavros/imu/data", 1, &SetHomeNode::attitudeCallback, this);
+        subs_["translational_state_source"] = nh.subscribe(uav_prefix +"/mavros/local_position/pose", 1, &SetHomeNode::currentPositionCallback, this);
+        subs_["velocity_source"] = nh.subscribe(uav_prefix + "/mavros/local_position/velocity_local", 1, &SetHomeNode::velocityCallback, this);
+        subs_["rotational_state_source"] = nh.subscribe(uav_prefix + "/mavros/imu/data", 1, &SetHomeNode::attitudeCallback, this);
 
         // advertise the difference between the home position and the current position
-        diff_position_pub_ = nh.advertise<nav_msgs::Odometry>("/state_estimator/local_position/odom_adjusted", 1);
+        diff_position_pub_ = nh.advertise<nav_msgs::Odometry>(uav_prefix + "/state_estimator/local_position/odom_adjusted", 1);
 
         ROS_INFO("Set Home Node Initialized"); 
 
