@@ -18,7 +18,7 @@ using namespace std::string_literals;
             localPositionSub = n.subscribe(uav_prefix + "/mocap/UAV0", 1, &StateEstimatorNode::GetMocapMsg, this);
             visionPosePub = n.advertise<geometry_msgs::PoseStamped>(uav_prefix + "/mavros/vision_pose/pose", 1);
         } else {
-            localPositionSub = n.subscribe(uav_prefix + "/state_estimator/local_position/odom_adjusted", 1, &StateEstimatorNode::GetGPSMsg, this);
+            localPositionSub = n.subscribe(uav_prefix + "/mavros/local_position/pose", 1, &StateEstimatorNode::GetGPSMsg, this);
         }
         statePub = n.advertise<nav_msgs::Odometry>(uav_prefix + "/state_estimator/local_position/odom", 1);
         estimatorTypePub = n.advertise<std_msgs::Bool>(uav_prefix + "/estimator_type", 1);

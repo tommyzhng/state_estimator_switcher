@@ -27,15 +27,12 @@ target_compile_features(state_estimator PUBLIC cxx_std_17)
 
 
 
-add_executable(set_home_node src/set_home_node.cpp)
-target_compile_features(set_home_node PRIVATE cxx_std_17)
 add_executable(state_estimator_node src/state_estimator_node.cpp)
 
 target_link_libraries(state_estimator_node PUBLIC state_estimator ${catkin_LIBRARIES})
-target_link_libraries(set_home_node ${catkin_LIBRARIES})
 
 add_dependencies(state_estimator_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(set_home_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)

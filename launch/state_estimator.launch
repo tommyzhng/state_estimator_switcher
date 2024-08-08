@@ -6,8 +6,4 @@
     <rosparam command="load" file="$(find state_estimator)/config/params.json" />
     <param name="uav_prefix" value="$(arg uav_prefix)" />
   </node>
-  <!-- Set Home Node -->
-  <node pkg="state_estimator" type="set_home_node" name="set_home_node" output="screen"> 
-    <param name="uav_prefix" value="$(arg uav_prefix)" />
-  </node>
 </launch>
