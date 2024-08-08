@@ -18,9 +18,9 @@ using namespace std::string_literals;
             localPositionSub = n.subscribe(uav_prefix + "/mocap/UAV0", 1, &StateEstimatorNode::GetMocapMsg, this);
             visionPosePub = n.advertise<geometry_msgs::PoseStamped>(uav_prefix + "/mavros/vision_pose/pose", 1);
         } else {
-            localPositionSub = n.subscribe(uav_prefix + "/mavros/local_position/pose", 1, &StateEstimatorNode::GetGPSMsg, this);
+            localPositionSub = n.subscribe("/mavros/local_position/pose", 1, &StateEstimatorNode::GetGPSMsg, this);
         }
-        statePub = n.advertise<nav_msgs::Odometry>(uav_prefix + "/state_estimator/local_position/odom", 1);
+        statePub = n.advertise<nav_msgs::Odometry>(uav_prefix + "/state_estimator/local_position/odom/UAV0", 1);
         estimatorTypePub = n.advertise<std_msgs::Bool>(uav_prefix + "/estimator_type", 1);
 
 
@@ -64,6 +64,8 @@ using namespace std::string_literals;
         state.header.seq = msg->header.seq;
         state.pose = msg->pose;
         state.twist = msg->twist;
+        // print x
+        ROS_INFO("x: %f", state.pose.pose.position.x);
     }
 
     void StateEstimatorNode::PubPose(void)
