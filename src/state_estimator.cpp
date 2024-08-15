@@ -10,8 +10,9 @@ using namespace std::string_literals;
         // ros::NodeHandle nh("~");
         //nh.param("indoorMode", indoorMode, true);
         std::string uav_prefix;
-        n.param("uav_prefix", uav_prefix, ""s);
-        n.param("indoorMode", indoorMode, true);
+        ros::NodeHandle pnh("~");
+        pnh.param("uav_prefix", uav_prefix, ""s);
+        pnh.param("indoorMode", indoorMode, true);
 
         // initialize subscriber
         if (indoorMode) {
@@ -24,7 +25,7 @@ using namespace std::string_literals;
         estimatorTypePub = n.advertise<std_msgs::Bool>(uav_prefix + "/estimator_type", 1);
 
 
-        ROS_INFO("Starting state estimator node for UAV %s", uav_prefix.c_str());
+        ROS_INFO("Starting state estimator node for UAV %s in %s mode", uav_prefix.c_str(), (indoorMode ? "indoor": "outdoor"));
     }
 
     void StateEstimatorNode::CheckEstimator(void)

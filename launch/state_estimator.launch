@@ -2,12 +2,15 @@
   <!-- State Estimator Node -->
   <arg name="objects" default="UAV0"/>
   <arg name="uav_prefix" default=""/>
+  <arg name="indoorMode" default="false" />
   <node pkg="state_estimator" type="state_estimator_node" name="state_estimator" output="screen">
-    <rosparam command="load" file="$(find state_estimator)/config/params.json" />
+    <param name="indoorMode" value="$(arg indoorMode)" if="$(eval bool(arg('indoorMode')))"/>
+    <rosparam command="load" file="$(find state_estimator)/config/params.json" unless="$(eval bool(arg('indoorMode')))"/>
     <param name="uav_prefix" value="$(arg uav_prefix)" />
   </node>
   <!-- Set Home Node -->
   <node pkg="state_estimator" type="set_home_node" name="set_home_node" output="screen"> 
+    <param name="indoorMode" value="$(arg indoorMode)" />
     <param name="uav_prefix" value="$(arg uav_prefix)" />
   </node>
 </launch>
