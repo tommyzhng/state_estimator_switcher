@@ -10,24 +10,14 @@
 
 #include "Eigen/Dense"
 #include "mavros_msgs/CommandInt.h"
+#include "ros/forwards.h"
+#include "tf2_eigen/tf2_eigen.h"
 
 using namespace std::string_literals;
 
 class SetHomeNode {
  public:
   SetHomeNode() {
-    home_position_.x = 0.0;
-    home_position_.y = 0.0;
-    home_position_.z = 0.0;
-
-    current_odom_.pose.pose.position.x = 0.0;
-    current_odom_.pose.pose.position.y = 0.0;
-    current_odom_.pose.pose.position.z = 0.0;
-
-    diff_position_.pose.pose.position.x = 0.0;
-    diff_position_.pose.pose.position.y = 0.0;
-    diff_position_.pose.pose.position.z = 0.0;
-
     ros::NodeHandle nh;
     ros::NodeHandle pnh("~");
     auto uav_prefix = pnh.param("uav_prefix", ""s);
@@ -54,14 +44,7 @@ class SetHomeNode {
 
     ROS_INFO("Set Home Node Initialized");
 
-    ros::Rate rate(60);
-
-    while (ros::ok()) {
-      computeDifference();
-      diff_position_pub_.publish(diff_position_);
-      ros::spinOnce();
-      rate.sleep();
-    }
+    pub_loop_ = nh.createTimer(60.0, &SetHomeNode::publishLoop, this);
   }
 
  private:
@@ -69,59 +52,59 @@ class SetHomeNode {
   std::map<std::string, ros::Subscriber> subs_;
   ros::Publisher diff_position_pub_;
 
-  geometry_msgs::Point home_position_;
+  Eigen::Vector3d position_{Eigen::Vector3d::Zero()};
+  Eigen::Quaterniond attitude_{Eigen::Quaterniond::Identity()};
+  Eigen::Vector3d linear_velocity_{Eigen::Vector3d::Zero()};
+  Eigen::Vector3d angular_velocity_{Eigen::Vector3d::Zero()};
 
-  Eigen::Vector3d home_offset_;
-  nav_msgs::Odometry current_odom_;
+  Eigen::Vector3d current_position_{Eigen::Vector3d::Zero()};
+  Eigen::Vector3d home_position_{Eigen::Vector3d::Zero()};
   nav_msgs::Odometry diff_position_;
-
+  ros::Timer pub_loop_;
+  void publishLoop(const ros::TimerEvent &_) {
+    computeDifference();
+    diff_position_pub_.publish(diff_position_);
+  }
   bool setHomeCallback(mavros_msgs::CommandInt::Request &req,
                        mavros_msgs::CommandInt::Response &res) {
-    home_position_.x = current_odom_.pose.pose.position.x;
-    home_position_.y = current_odom_.pose.pose.position.y;
-    home_position_.z = current_odom_.pose.pose.position.z;
+    current_position_ = position_;
 
-    home_offset_ << req.param1, req.param2, req.param3;
+    home_position_ << req.param1, req.param2, req.param3;
 
-    ROS_INFO("Home position set to: x: %f, y: %f, z: %f", home_position_.x,
-             home_position_.y, home_position_.z);
+    ROS_INFO("Home position set to: x: %f, y: %f, z: %f", current_position_.x(),
+             current_position_.y(), current_position_.z());
 
     return true;
   }
 
   void currentPositionCallback(
       const geometry_msgs::PoseStamped::ConstPtr &msg) {
-    // convert odom to pose stamped
-    current_odom_.header = msg->header;
-
-    current_odom_.pose.pose.position = msg->pose.position;
+    tf2::fromMsg(msg->pose.position, position_);
   }
 
   void velocityCallback(const geometry_msgs::TwistStamped::ConstPtr &msg) {
-    current_odom_.header = msg->header;
-    current_odom_.twist.twist.linear = msg->twist.linear;
+    tf2::fromMsg(msg->twist.linear, linear_velocity_);
   }
 
   void attitudeCallback(const sensor_msgs::Imu::ConstPtr &msg) {
-    current_odom_.header = msg->header;
-    current_odom_.pose.pose.orientation = msg->orientation;
-    current_odom_.twist.twist.angular = msg->angular_velocity;
+    tf2::fromMsg(msg->orientation, attitude_);
+    tf2::fromMsg(msg->angular_velocity, angular_velocity_);
   }
 
   void computeDifference() {
-    diff_position_ = current_odom_;  // copy the current config
-    diff_position_.pose.pose.position.x = current_odom_.pose.pose.position.x -
-                                          home_position_.x + home_offset_.x();
-    diff_position_.pose.pose.position.y = current_odom_.pose.pose.position.y -
-                                          home_position_.y + home_offset_.y();
-    diff_position_.pose.pose.position.z = current_odom_.pose.pose.position.z -
-                                          home_position_.z + home_offset_.z();
-    diff_position_.twist = current_odom_.twist;
+    diff_position_.header.stamp = ros::Time::now();
+    const Eigen::Vector3d offset = home_position_ - current_position_;
+    const Eigen::Vector3d actual_position = position_ + offset;
+    diff_position_.pose.pose.position = tf2::toMsg(actual_position);
+    diff_position_.pose.pose.orientation = tf2::toMsg(attitude_);
+    tf2::toMsg(linear_velocity_, diff_position_.twist.twist.linear);
+    tf2::toMsg(angular_velocity_, diff_position_.twist.twist.angular);
   }
 };
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "set_home_node");
   SetHomeNode set_home_node;
+  ros::spin();
   return 0;
 }
