@@ -6,8 +6,10 @@
 #include <sensor_msgs/Imu.h>
 #include <std_srvs/Empty.h>
 
-#include <map>
 #include <string>
+
+#include "Eigen/Dense"
+#include "mavros_msgs/CommandInt.h"
 
 using namespace std::string_literals;
 
@@ -68,14 +70,18 @@ class SetHomeNode {
   ros::Publisher diff_position_pub_;
 
   geometry_msgs::Point home_position_;
+
+  Eigen::Vector3d home_offset_;
   nav_msgs::Odometry current_odom_;
   nav_msgs::Odometry diff_position_;
 
-  bool setHomeCallback(std_srvs::Empty::Request &req,
-                       std_srvs::Empty::Response &res) {
+  bool setHomeCallback(mavros_msgs::CommandInt::Request &req,
+                       mavros_msgs::CommandInt::Response &res) {
     home_position_.x = current_odom_.pose.pose.position.x;
     home_position_.y = current_odom_.pose.pose.position.y;
     home_position_.z = current_odom_.pose.pose.position.z;
+
+    home_offset_ << req.param1, req.param2, req.param3;
 
     ROS_INFO("Home position set to: x: %f, y: %f, z: %f", home_position_.x,
              home_position_.y, home_position_.z);
@@ -104,12 +110,12 @@ class SetHomeNode {
 
   void computeDifference() {
     diff_position_ = current_odom_;  // copy the current config
-    diff_position_.pose.pose.position.x =
-        current_odom_.pose.pose.position.x - home_position_.x;
-    diff_position_.pose.pose.position.y =
-        current_odom_.pose.pose.position.y - home_position_.y;
-    diff_position_.pose.pose.position.z =
-        current_odom_.pose.pose.position.z - home_position_.z;
+    diff_position_.pose.pose.position.x = current_odom_.pose.pose.position.x -
+                                          home_position_.x + home_offset_.x();
+    diff_position_.pose.pose.position.y = current_odom_.pose.pose.position.y -
+                                          home_position_.y + home_offset_.y();
+    diff_position_.pose.pose.position.z = current_odom_.pose.pose.position.z -
+                                          home_position_.z + home_offset_.z();
     diff_position_.twist = current_odom_.twist;
   }
 };
