@@ -48,7 +48,6 @@ void SetMocapFlag(void) {}
 
 void StateEstimatorNode::GetMocapMsg(
     const optitrack_broadcast::Mocap::ConstPtr &msg) {
-  state.header.stamp = ros::Time::now();
   state.header.frame_id = "map";
   state.header.seq = msg->header.seq;
 
@@ -61,7 +60,6 @@ void StateEstimatorNode::GetMocapMsg(
 }
 
 void StateEstimatorNode::GetGPSMsg(const nav_msgs::Odometry::ConstPtr &msg) {
-  state.header.stamp = ros::Time::now();
   state.header.frame_id = "map";
   state.header.seq = msg->header.seq;
   state.pose = msg->pose;
@@ -69,6 +67,7 @@ void StateEstimatorNode::GetGPSMsg(const nav_msgs::Odometry::ConstPtr &msg) {
 }
 
 void StateEstimatorNode::PubPose(void) {
+  state.header.stamp = ros::Time::now();
   statePub.publish(state);
   if (indoorMode) {
     visionPosePub.publish(vision_pose);
