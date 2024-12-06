@@ -1,3 +1,43 @@
+# cmake_minimum_required(VERSION 3.0.2)
+# project(state_estimator)
+
+# find_package(catkin REQUIRED COMPONENTS
+#   roscpp
+#   std_msgs
+#   nav_msgs
+#   std_srvs
+#   optitrack_broadcast
+#   applanix_msgs
+# )
+
+# catkin_package()
+
+# include_directories(include ${catkin_INCLUDE_DIRS} /usr/include/GeographicLib)
+
+# add_library(state_estimator src/state_estimator.cpp)
+# target_include_directories(state_estimator PUBLIC include)
+# target_compile_features(state_estimator PUBLIC cxx_std_17)
+
+# add_executable(set_home_node src/set_home_node.cpp)
+# target_compile_features(set_home_node PRIVATE cxx_std_17)
+# add_executable(state_estimator_node src/state_estimator_node.cpp)
+
+# target_link_libraries(state_estimator_node
+#   PUBLIC set_home_node
+#   ${catkin_LIBRARIES}
+#   /usr/lib/x86_64-linux-gnu/libGeographic.so
+# )
+
+# target_link_libraries(set_home_node ${catkin_LIBRARIES})
+
+# add_dependencies(state_estimator_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(set_home_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+# include_directories(
+#   ${catkin_INCLUDE_DIRS}
+# )
+
+
 cmake_minimum_required(VERSION 3.0.2)
 project(state_estimator)
 
@@ -13,29 +53,87 @@ find_package(catkin REQUIRED COMPONENTS
   nav_msgs
   std_srvs
   optitrack_broadcast
+  applanix_msgs
 )
 
 catkin_package(
 )
 
+include_directories(include ${catkin_INCLUDE_DIRS} /usr/include/GeographicLib)
 
-
-include_directories(include ${catkin_INCLUDE_DIRS})
+# Library that contains shared functionality
 add_library(state_estimator src/state_estimator.cpp)
 target_include_directories(state_estimator PUBLIC include)
 target_compile_features(state_estimator PUBLIC cxx_std_17)
 
-
-
+# Executable for set_home_node
 add_executable(set_home_node src/set_home_node.cpp)
 target_compile_features(set_home_node PRIVATE cxx_std_17)
-add_executable(state_estimator_node src/state_estimator_node.cpp)
+target_link_libraries(set_home_node ${catkin_LIBRARIES} /usr/lib/x86_64-linux-gnu/libGeographic.so)
 
-target_link_libraries(state_estimator_node PUBLIC state_estimator ${catkin_LIBRARIES})
-target_link_libraries(set_home_node ${catkin_LIBRARIES})
+# Executable for state_estimator_node
+add_executable(state_estimator_node src/state_estimator_node.cpp)
+target_link_libraries(state_estimator_node 
+  PUBLIC state_estimator 
+  ${catkin_LIBRARIES}
+  /usr/lib/x86_64-linux-gnu /libGeographic.so
+)
 
 add_dependencies(state_estimator_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(set_home_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+include_directories(
+  ${catkin_INCLUDE_DIRS}
+)
+
+
+
+# cmake_minimum_required(VERSION 3.0.2)
+# project(state_estimator)
+
+# ## Compile as C++11, supported in ROS Kinetic and newer
+# # add_compile_options(-std=c++11)
+
+# ## Find catkin macros and libraries
+# ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
+# ## is used, also find other catkin packages
+# find_package(catkin REQUIRED COMPONENTS
+#   roscpp
+#   std_msgs
+#   nav_msgs
+#   std_srvs
+#   optitrack_broadcast
+#   applanix_msgs
+# )
+
+# catkin_package(
+# )
+
+# include_directories(include ${catkin_INCLUDE_DIRS} /usr/include/GeographicLib)
+
+# add_library(state_estimator src/state_estimator.cpp)
+# target_include_directories(state_estimator PUBLIC include)
+# target_compile_features(state_estimator PUBLIC cxx_std_17)
+
+# add_executable(set_home_node src/set_home_node.cpp)
+# target_compile_features(set_home_node PRIVATE cxx_std_17)
+# add_executable(state_estimator_node src/state_estimator_node.cpp)
+
+# target_link_libraries(state_estimator_node PUBLIC state_estimator ${catkin_LIBRARIES})
+# target_link_libraries(set_home_node ${catkin_LIBRARIES})
+# target_link_libraries(state_estimator_node
+#   PUBLIC state_estimator
+#   ${catkin_LIBRARIES}
+#   /usr/lib/x86_64-linux-gnu/libGeographic.so
+# )
+
+# add_dependencies(state_estimator_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(set_home_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+# include_directories(
+# # include
+#   ${catkin_INCLUDE_DIRS}
+# )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -130,10 +228,7 @@ add_dependencies(set_home_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPO
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(
-# include
-  ${catkin_INCLUDE_DIRS}
-)
+
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}

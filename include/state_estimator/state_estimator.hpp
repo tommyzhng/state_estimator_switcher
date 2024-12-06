@@ -7,38 +7,42 @@
 #include "geometry_msgs/PoseStamped.h"
 #include <std_msgs/Bool.h>
 
-namespace fsc {
-
-class StateEstimatorNode
+namespace fsc
 {
-public:
 
-    struct mocapWatchdogState {
-        bool mocapRecieved{false};
-        uint32_t mocapTimeoutTime{10};
+    class StateEstimatorNode
+    {
+    public:
+        struct mocapWatchdogState
+        {
+            bool mocapRecieved{false};
+            uint32_t mocapTimeoutTime{10};
+        };
+
+        void Update(void);
+        StateEstimatorNode(ros::NodeHandle &n);
+        ~StateEstimatorNode() = default;
+
+    private:
+        void GetMocapMsg(const optitrack_broadcast::Mocap::ConstPtr &msg);
+        void GetGPSMsg(const nav_msgs::Odometry::ConstPtr &msg);
+        // void GetAPXMsg(const applanix_msgs::NavigationSolutionGsof49::ConstPtr &msg);
+        void PubPose(void);
+        void CheckEstimator(void);
+        void SetMocapFlag(void);
+
+        ros::Subscriber localPositionSub;
+        ros::Subscriber velocitySub;
+        ros::Publisher statePub;
+        ros::Publisher estimatorTypePub;
+        ros::Publisher visionPosePub;
+        ros::Subscriber APXGsofSub;
+        bool indoorMode{false};
+        // bool APXMode{true};
+        uint64_t loopCounter{0};
+        uint64_t loopThreshold{20};
+        nav_msgs::Odometry state;
+        geometry_msgs::PoseStamped vision_pose;
     };
-
-    void Update(void);
-    StateEstimatorNode(ros::NodeHandle& n);
-    ~StateEstimatorNode() = default;
-
-private:
-    void GetMocapMsg(const optitrack_broadcast::Mocap::ConstPtr &msg);
-    void GetGPSMsg(const nav_msgs::Odometry::ConstPtr &msg);
-    void PubPose(void);
-    void CheckEstimator(void);
-    void SetMocapFlag(void);
-    
-    ros::Subscriber localPositionSub;
-    ros::Subscriber velocitySub;
-    ros::Publisher statePub;
-    ros::Publisher estimatorTypePub;
-    ros::Publisher visionPosePub;
-    bool indoorMode{false};
-    uint64_t loopCounter{0};
-    uint64_t loopThreshold{20};
-    nav_msgs::Odometry state;
-    geometry_msgs::PoseStamped vision_pose;
-};
 };
 #endif

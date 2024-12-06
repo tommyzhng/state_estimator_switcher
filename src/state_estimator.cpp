@@ -1,36 +1,46 @@
 #include "state_estimator/state_estimator.hpp"
 
-namespace fsc {
+namespace fsc
+{
 
-using namespace std::string_literals;
-    StateEstimatorNode::StateEstimatorNode(ros::NodeHandle& n)
-        //statePub(nh.advertise<nav_msgs::Odometry>("/mavros/local_position/odom/UAV0", 1)),
-        //estimatorTypePub(nh.advertise<std_msgs::Bool>("/estimator_type", 1))
+    using namespace std::string_literals;
+    StateEstimatorNode::StateEstimatorNode(ros::NodeHandle &n)
+    // statePub(nh.advertise<nav_msgs::Odometry>("/mavros/local_position/odom/UAV0", 1)),
+    // estimatorTypePub(nh.advertise<std_msgs::Bool>("/estimator_type", 1))
     {
         // ros::NodeHandle nh("~");
-        //nh.param("indoorMode", indoorMode, true);
+        // nh.param("indoorMode", indoorMode, true);
         std::string uav_prefix;
         ros::NodeHandle pnh("~");
         pnh.param("uav_prefix", uav_prefix, ""s);
         pnh.param("indoorMode", indoorMode, true);
 
         // initialize subscriber
-        if (indoorMode) {
+        if (indoorMode)
+        {
             localPositionSub = n.subscribe(uav_prefix + "/mocap/UAV0", 1, &StateEstimatorNode::GetMocapMsg, this);
             visionPosePub = n.advertise<geometry_msgs::PoseStamped>(uav_prefix + "/mavros/vision_pose/pose", 1);
-        } else {
+        }
+        // else if (APXMode)
+        // {
+        //     localPositionSub = n.subscribe(uav_prefix + "/state_estimator/local_position/odom_adjusted", 1, &StateEstimatorNode::GetAPXMsg, this);
+        // }
+        else
+        {
             localPositionSub = n.subscribe(uav_prefix + "/state_estimator/local_position/odom_adjusted", 1, &StateEstimatorNode::GetGPSMsg, this);
         }
+
+        // APXGsofSub = n.subscribe(uav_prefix + "lvx_client_node/gsof/49", 10, &StateEstimatorNode::GetAPXMsg, this);
         statePub = n.advertise<nav_msgs::Odometry>(uav_prefix + "/state_estimator/local_position/odom", 1);
         estimatorTypePub = n.advertise<std_msgs::Bool>(uav_prefix + "/estimator_type", 1);
 
-
-        ROS_INFO("Starting state estimator node for UAV %s in %s mode", uav_prefix.c_str(), (indoorMode ? "indoor": "outdoor"));
+        ROS_INFO("Starting state estimator node for UAV %s in %s mode", uav_prefix.c_str(), (indoorMode ? "indoor" : "outdoor"));
     }
 
     void StateEstimatorNode::CheckEstimator(void)
     {
-        if (loopCounter >= loopThreshold) {
+        if (loopCounter >= loopThreshold)
+        {
             loopCounter = 0;
             std_msgs::Bool success;
             success.data = (indoorMode) ? true : false;
@@ -41,7 +51,6 @@ using namespace std::string_literals;
 
     void SetMocapFlag(void)
     {
-
     }
 
     void StateEstimatorNode::GetMocapMsg(const optitrack_broadcast::Mocap::ConstPtr &msg)
@@ -67,13 +76,40 @@ using namespace std::string_literals;
         state.twist = msg->twist;
     }
 
+    // void StateEstimatorNode::GetAPXMsg(const applanix_msgs::NavigationSolutionGsof49::ConstPtr &msg)
+    // {
+    //     state.header.stamp = ros::Time::now();
+    //     state.header.frame_id = "map";
+    //     state.header.seq = msg->header.seq;
+
+    //     // LLA coordinates from the message
+    //     double lat = msg->lla.latitude;
+    //     double lon = msg->lla.longitude;
+    //     double alt = msg->lla.altitude;
+
+    //     // Define the reference point (LLA of the origin of ENU)
+    //     double ref_lat = 43.781759;
+    //     double ref_lon = -79.466227;
+    //     double ref_alt = 190;
+
+    //     // Convert LLA to ENU
+    //     GeographicLib::LocalCartesian enu(ref_lat, ref_lon, ref_alt);
+    //     double x, y, z;
+    //     enu.Forward(lat, lon, alt, x, y, z);
+
+    //     // Set the ENU coordinates in your state.pose
+    //     state.pose.pose.position.x = x;
+    //     state.pose.pose.position.y = y;
+    //     state.pose.pose.position.z = z;
+    // }
+
     void StateEstimatorNode::PubPose(void)
     {
         statePub.publish(state);
-        if (indoorMode){
+        if (indoorMode)
+        {
             visionPosePub.publish(vision_pose);
         }
-       
     }
 
     void StateEstimatorNode::Update(void)
